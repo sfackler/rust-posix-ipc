@@ -133,7 +133,7 @@ impl MapOptions {
         }
     }
 
-    pub fn map<T: AsRawFd>(&self, len: usize, fd: &T, offset: u64) -> io::Result<MemoryMap> {
+    pub unsafe fn map<T: AsRawFd>(&self, len: usize, fd: &T, offset: u64) -> io::Result<MemoryMap> {
         self.map_inner(len, libc::MAP_FILE, fd.as_raw_fd(), offset)
     }
 
