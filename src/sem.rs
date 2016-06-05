@@ -115,7 +115,7 @@ mod test {
 
     #[test]
     fn single_thread() {
-        let name = "/ipc-test-sem-single-thread";
+        let name = "/posix-ipc-sem-single-thread";
         let sem = OpenOptions::new().create_new(true).open(name).unwrap();
         unlink(name).unwrap();
         sem.post().unwrap();
