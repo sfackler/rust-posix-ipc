@@ -1,5 +1,4 @@
 use libc;
-use std::io;
 
 pub mod named;
 pub mod unnamed;
@@ -7,23 +6,16 @@ pub mod unnamed;
 struct RawSemaphore(*mut libc::sem_t);
 
 impl RawSemaphore {
-    fn wait(&self) -> io::Result<()> {
-        unsafe {
-            if libc::sem_wait(self.0) == 0 {
-                Ok(())
-            } else {
-                Err(io::Error::last_os_error())
-            }
+    fn wait(&self) {
+        let r = unsafe { libc::sem_wait(self.0) };
+        if r == libc::EDEADLK {
+            panic!("semaphore wait would result in deadlock");
         }
+        debug_assert_eq!(r, 0);
     }
 
-    fn post(&self) -> io::Result<()> {
-        unsafe {
-            if libc::sem_post(self.0) == 0 {
-                Ok(())
-            } else {
-                Err(io::Error::last_os_error())
-            }
-        }
+    fn post(&self) {
+        let r = unsafe { libc::sem_post(self.0) };
+        debug_assert_eq!(r, 0);
     }
 }

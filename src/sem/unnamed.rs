@@ -22,11 +22,11 @@ impl Semaphore {
         }
     }
 
-    pub fn wait(&self) -> io::Result<()> {
+    pub fn wait(&self) {
         self.0.wait()
     }
 
-    pub fn post(&self) -> io::Result<()> {
+    pub fn post(&self) {
         self.0.post()
     }
 }
@@ -38,11 +38,11 @@ impl SemaphoreRef {
         SemaphoreRef(RawSemaphore(sem))
     }
 
-    pub fn wait(&self) -> io::Result<()> {
+    pub fn wait(&self) {
         self.0.wait()
     }
 
-    pub fn post(&self) -> io::Result<()> {
+    pub fn post(&self) {
         self.0.post()
     }
 }

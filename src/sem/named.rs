@@ -16,11 +16,11 @@ impl Drop for Semaphore {
 }
 
 impl Semaphore {
-    pub fn wait(&self) -> io::Result<()> {
+    pub fn wait(&self) {
         self.0.wait()
     }
 
-    pub fn post(&self) -> io::Result<()> {
+    pub fn post(&self) {
         self.0.post()
     }
 }
@@ -108,7 +108,7 @@ mod test {
         let name = "/posix-ipc-sem-single-thread";
         let sem = OpenOptions::new().create_new(true).open(name).unwrap();
         unlink(name).unwrap();
-        sem.post().unwrap();
-        sem.wait().unwrap();
+        sem.post();
+        sem.wait();
     }
 }
