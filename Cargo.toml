@@ -4,7 +4,4 @@ version = "0.1.0"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 
 [dependencies]
-libc = "0.2"
-
-[replace]
-"libc:0.2.11" = { git = "https://github.com/sfackler/libc", branch = "sem" }
+libc = "0.2.12"
