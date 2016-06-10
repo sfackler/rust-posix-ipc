@@ -16,6 +16,14 @@ impl Drop for Semaphore {
 }
 
 impl Semaphore {
+    pub fn open<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
+        OpenOptions::new().open(name.as_ref())
+    }
+
+    pub fn create<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
+        OpenOptions::new().create(true).open(name.as_ref())
+    }
+
     pub fn wait(&self) {
         self.0.wait()
     }
@@ -110,5 +118,19 @@ mod test {
         unlink(name).unwrap();
         sem.post();
         sem.wait();
+    }
+
+    #[test]
+    fn open_missing() {
+        let name = "/posix-ipc-sem-open-missing";
+        assert!(Semaphore::open(name).is_err());
+    }
+
+    #[test]
+    fn create_open() {
+        let name = "/posix-ipc-sem-create-open";
+        Semaphore::create(name).unwrap();
+        Semaphore::open(name).unwrap();
+        unlink(name).unwrap();
     }
 }
