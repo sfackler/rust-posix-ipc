@@ -3,35 +3,25 @@ use std::io;
 use std::ffi::{OsStr, CString};
 use std::os::unix::ffi::OsStrExt;
 
-pub struct Semaphore(*mut libc::sem_t);
+use sem::RawSemaphore;
+
+pub struct Semaphore(RawSemaphore);
 
 impl Drop for Semaphore {
     fn drop(&mut self) {
         unsafe {
-            libc::sem_close(self.0);
+            libc::sem_close((self.0).0);
         }
     }
 }
 
 impl Semaphore {
     pub fn wait(&self) -> io::Result<()> {
-        unsafe {
-            if libc::sem_wait(self.0) == 0 {
-                Ok(())
-            } else {
-                Err(io::Error::last_os_error())
-            }
-        }
+        self.0.wait()
     }
 
     pub fn post(&self) -> io::Result<()> {
-        unsafe {
-            if libc::sem_post(self.0) == 0 {
-                Ok(())
-            } else {
-                Err(io::Error::last_os_error())
-            }
-        }
+        self.0.post()
     }
 }
 
@@ -91,7 +81,7 @@ impl OpenOptions {
             if sem == libc::SEM_FAILED {
                 Err(io::Error::last_os_error())
             } else {
-                Ok(Semaphore(sem))
+                Ok(Semaphore(RawSemaphore(sem)))
             }
         }
     }
