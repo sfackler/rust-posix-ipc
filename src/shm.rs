@@ -6,6 +6,12 @@ use std::mem;
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
 
+// shm_open is variadic on OSX but not anything else so we have to do this :(
+#[cfg(target_os = "macos")]
+type ModeHack = libc::c_int;
+#[cfg(not(target_os = "macos"))]
+type ModeHack = libc::mode_t;
+
 pub struct SharedMemory(libc::c_int);
 
 impl Drop for SharedMemory {
@@ -111,7 +117,7 @@ impl OpenOptions {
         }
 
         unsafe {
-            let ret = libc::shm_open(name.as_ptr(), oflag, self.mode as libc::c_int);
+            let ret = libc::shm_open(name.as_ptr(), oflag, self.mode as ModeHack);
             if ret >= 0 {
                 Ok(SharedMemory(ret))
             } else {
