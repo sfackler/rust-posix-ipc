@@ -69,7 +69,7 @@ impl MapOptions {
         self
     }
 
-    pub fn addr(&mut self, addr: &mut libc::c_void) -> &mut MapOptions {
+    pub fn addr(&mut self, addr: *mut libc::c_void) -> &mut MapOptions {
         self.addr = addr;
         self
     }
