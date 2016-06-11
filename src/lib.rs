@@ -12,8 +12,8 @@ mod test {
 
     #[test]
     #[cfg_attr(target_os = "macos", ignore)]
-    fn named_sem() {
-        let name = "/posix-ipc-named-sem";
+    fn unnamed_sem() {
+        let name = "/posix-ipc-unnamed-sem";
         let shm = shm::OpenOptions::new()
             .create_new(true)
             .write(true)
