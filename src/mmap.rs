@@ -1,8 +1,6 @@
 use libc;
 use std::io;
-use std::ops::{Deref, DerefMut};
 use std::ptr;
-use std::slice;
 use std::os::unix::io::AsRawFd;
 
 pub struct MemoryMap {
@@ -18,23 +16,20 @@ impl Drop for MemoryMap {
     }
 }
 
-impl Deref for MemoryMap {
-    type Target = [u8];
-
+impl MemoryMap {
     #[inline]
-    fn deref(&self) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts(self.base as *const u8, self.len)
-        }
+    pub fn as_ptr(&self) -> *const libc::c_void {
+        self.base as *const _
     }
-}
 
-impl DerefMut for MemoryMap {
     #[inline]
-    fn deref_mut(&mut self) -> &mut [u8] {
-        unsafe {
-            slice::from_raw_parts_mut(self.base as *mut u8, self.len)
-        }
+    pub fn as_mut_ptr(&mut self) -> *mut libc::c_void {
+        self.base
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.len
     }
 }
 
