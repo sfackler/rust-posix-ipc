@@ -82,10 +82,7 @@ impl OpenOptions {
         }
 
         unsafe {
-            let sem = libc::sem_open(name.as_ptr(),
-                                     flags,
-                                     self.mode as libc::c_int,
-                                     self.value);
+            let sem = libc::sem_open(name.as_ptr(), flags, self.mode as libc::c_int, self.value);
             if sem == libc::SEM_FAILED {
                 Err(io::Error::last_os_error())
             } else {

@@ -24,11 +24,11 @@ mod test {
 
         unsafe {
             let mut mmap = mmap::MapOptions::new()
-                               .read(true)
-                               .write(true)
-                               .shared(true)
-                               .map(4096, &shm, 0)
-                               .unwrap();
+                .read(true)
+                .write(true)
+                .shared(true)
+                .map(4096, &shm, 0)
+                .unwrap();
 
             let sem_ptr = mmap.as_mut_ptr() as *mut _;
             let _sem = Semaphore::new(sem_ptr, 1).unwrap();

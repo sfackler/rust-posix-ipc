@@ -88,7 +88,8 @@ impl MapOptions {
                  len: usize,
                  mut flags: libc::c_int,
                  fd: libc::c_int,
-                 offset: u64) -> io::Result<MemoryMap> {
+                 offset: u64)
+                 -> io::Result<MemoryMap> {
         let mut prot = libc::PROT_NONE;
         if self.read {
             prot |= libc::PROT_READ;
