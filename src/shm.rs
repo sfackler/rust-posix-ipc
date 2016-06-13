@@ -5,6 +5,7 @@ use libc;
 use std::ffi::{OsStr, CString};
 use std::io;
 use std::mem;
+use std::fs::{File, Metadata};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
 
@@ -42,6 +43,15 @@ impl SharedMemory {
                 Err(io::Error::last_os_error())
             }
         }
+    }
+
+    pub fn metadata(&self) -> io::Result<Metadata> {
+        // this is pretty sketch, but Metadata doesn't have any public
+        // constructors
+        let file = unsafe { File::from_raw_fd(self.0) };
+        let metadata = file.metadata();
+        mem::forget(file);
+        metadata
     }
 
     /// Returns a new independently owned handle to the same shared memory
@@ -174,5 +184,20 @@ pub fn unlink<T: AsRef<OsStr>>(name: T) -> io::Result<()> {
         } else {
             Err(io::Error::last_os_error())
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn metadata() {
+        let name = "/posix-pic-shm-metadata";
+        let shm = OpenOptions::new().create(true).write(true).open(name).unwrap();
+        unlink(name).unwrap();
+        shm.set_len(123).unwrap();
+        assert_eq!(shm.metadata().unwrap().len(), 123);
+        shm.set_len(0).unwrap();
     }
 }
