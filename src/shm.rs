@@ -44,6 +44,8 @@ impl SharedMemory {
         }
     }
 
+    /// Returns a new independently owned handle to the same shared memory
+    /// region.
     pub fn try_clone(&self) -> io::Result<SharedMemory> {
         let fd = unsafe { libc::dup(self.0) };
         if fd < 0 {
