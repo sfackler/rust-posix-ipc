@@ -45,6 +45,7 @@ impl SharedMemory {
         }
     }
 
+    /// Returns metadata about the shared memory region, including its length.
     pub fn metadata(&self) -> io::Result<Metadata> {
         // this is pretty sketch, but Metadata doesn't have any public
         // constructors
