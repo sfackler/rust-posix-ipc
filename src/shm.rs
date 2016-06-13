@@ -43,6 +43,15 @@ impl SharedMemory {
             }
         }
     }
+
+    pub fn try_clone(&self) -> io::Result<SharedMemory> {
+        let fd = unsafe { libc::dup(self.0) };
+        if fd < 0 {
+            Err(io::Error::last_os_error())
+        } else {
+            Ok(SharedMemory(fd))
+        }
+    }
 }
 
 impl AsRawFd for SharedMemory {
