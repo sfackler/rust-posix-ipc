@@ -1,3 +1,5 @@
+//! POSIX shared memory
+
 use libc;
 
 use std::ffi::{OsStr, CString};
@@ -12,6 +14,7 @@ type ModeHack = libc::c_int;
 #[cfg(not(target_os = "macos"))]
 type ModeHack = libc::mode_t;
 
+/// A shared memory region.
 pub struct SharedMemory(libc::c_int);
 
 impl Drop for SharedMemory {
@@ -23,6 +26,10 @@ impl Drop for SharedMemory {
 }
 
 impl SharedMemory {
+    /// Sets the length of the shared memory region.
+    ///
+    /// If `size` is greater than the current size of the region, it will be
+    /// extended with 0s.
     pub fn set_len(&self, size: u64) -> io::Result<()> {
         unsafe {
             if size > libc::off_t::max_value() as u64 {
@@ -58,6 +65,7 @@ impl FromRawFd for SharedMemory {
     }
 }
 
+/// A builder type for `SharedMemory`.
 pub struct OpenOptions {
     write: bool,
     create: bool,
@@ -67,6 +75,7 @@ pub struct OpenOptions {
 }
 
 impl OpenOptions {
+    /// Returns a new `OpenOptions` with default settings.
     pub fn new() -> OpenOptions {
         OpenOptions {
             write: false,
@@ -77,26 +86,44 @@ impl OpenOptions {
         }
     }
 
+    /// Sets the option for write access.
+    ///
+    /// The shared memory region is writable if and only if this option is set.
     pub fn write(&mut self, write: bool) -> &mut OpenOptions {
         self.write = write;
         self
     }
 
+    /// Sets the option for creating a new shared memory region.
+    ///
+    /// This option indicates whether a new region will be created if it does
+    /// not already exist.
     pub fn create(&mut self, create: bool) -> &mut OpenOptions {
         self.create = create;
         self
     }
 
+    /// Sets the option to always create a new shared memory region.
+    ///
+    /// This option indicates whether a new region will be created. If the
+    /// region already exists, the operation will fail. This check happens
+    /// atomically.
+    ///
+    /// If this option is set, the value of `create` is ignored.
     pub fn create_new(&mut self, create_new: bool) -> &mut OpenOptions {
         self.create_new = create_new;
         self
     }
 
+    /// Sets the access mode use when creating a new shared memory region.
+    ///
+    /// If the region already exists, this is ignored.
     pub fn mode(&mut self, mode: u32) -> &mut OpenOptions {
         self.mode = mode as libc::mode_t;
         self
     }
 
+    /// Opens a shared memory region.
     pub fn open<T: AsRef<OsStr>>(&self, name: T) -> io::Result<SharedMemory> {
         let name = try!(CString::new(name.as_ref().as_bytes()));
 
@@ -127,6 +154,7 @@ impl OpenOptions {
     }
 }
 
+/// Removes a shared memory region.
 pub fn unlink<T: AsRef<OsStr>>(name: T) -> io::Result<()> {
     unsafe {
         let name = try!(CString::new(name.as_ref().as_bytes()));

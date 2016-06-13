@@ -1,3 +1,5 @@
+//! IPC semaphores.
+
 use libc;
 
 pub mod named;

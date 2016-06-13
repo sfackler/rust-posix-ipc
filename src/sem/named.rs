@@ -1,3 +1,5 @@
+//! Named IPC semaphores.
+
 use libc;
 use std::io;
 use std::ffi::{OsStr, CString};
@@ -5,6 +7,7 @@ use std::os::unix::ffi::OsStrExt;
 
 use sem::RawSemaphore;
 
+/// A POSIX named semaphore.
 pub struct Semaphore(RawSemaphore);
 
 impl Drop for Semaphore {
@@ -16,23 +19,28 @@ impl Drop for Semaphore {
 }
 
 impl Semaphore {
+    /// Opens an existing IPC semaphore.
     pub fn open<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
         OpenOptions::new().open(name.as_ref())
     }
 
+    /// Opens an IPC semaphore, creating it if it does not already exist.
     pub fn create<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
         OpenOptions::new().create(true).open(name.as_ref())
     }
 
+    /// Decrements the semaphore by 1, blocking if semaphore's value is 0.
     pub fn wait(&self) {
         self.0.wait()
     }
 
+    /// Increments the semaphore by 1.
     pub fn post(&self) {
         self.0.post()
     }
 }
 
+/// A builder for `Semaphore`s.
 pub struct OpenOptions {
     create: bool,
     create_new: bool,
@@ -41,6 +49,7 @@ pub struct OpenOptions {
 }
 
 impl OpenOptions {
+    /// Creates a new `OpenOptions` with default settings.
     pub fn new() -> OpenOptions {
         OpenOptions {
             create: false,
@@ -50,26 +59,44 @@ impl OpenOptions {
         }
     }
 
+    /// Sets the option for creating a new semaphore.
+    ///
+    /// This option indicates whether a new semaphore will be created if it does
+    /// not already exist.
     pub fn create(&mut self, create: bool) -> &mut OpenOptions {
         self.create = create;
         self
     }
 
+    /// Sets the option to always create a new semaphore.
+    ///
+    /// This option indicates whether a new semaphore will be created. If the
+    /// semaphore already exists, the operation will fail. This check happens
+    /// atomically.
+    ///
+    /// If this option is set, the value of `create` is ignored.
     pub fn create_new(&mut self, create_new: bool) -> &mut OpenOptions {
         self.create_new = create_new;
         self
     }
 
+    /// Sets the access mode use when creating a new semaphore.
+    ///
+    /// If the semaphore already exists, this is ignored.
     pub fn mode(&mut self, mode: u32) -> &mut OpenOptions {
         self.mode = mode as libc::mode_t;
         self
     }
 
+    /// Sets the initial value of the semaphore.
+    ///
+    /// If the semaphore already exists, this is ignored.
     pub fn value(&mut self, value: u32) -> &mut OpenOptions {
         self.value = value as libc::c_uint;
         self
     }
 
+    /// Opens a named semaphore.
     pub fn open<T: AsRef<OsStr>>(&self, name: T) -> io::Result<Semaphore> {
         let name = try!(CString::new(name.as_ref().as_bytes()));
 
@@ -92,6 +119,7 @@ impl OpenOptions {
     }
 }
 
+/// Removes a named semaphore.
 pub fn unlink<T: AsRef<OsStr>>(name: T) -> io::Result<()> {
     let name = try!(CString::new(name.as_ref().as_bytes()));
 
