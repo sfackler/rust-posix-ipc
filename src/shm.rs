@@ -68,12 +68,14 @@ impl SharedMemory {
 }
 
 impl AsRawFd for SharedMemory {
+    #[inline]
     fn as_raw_fd(&self) -> RawFd {
         self.0
     }
 }
 
 impl IntoRawFd for SharedMemory {
+    #[inline]
     fn into_raw_fd(self) -> RawFd {
         let fd = self.0;
         mem::forget(self);
@@ -82,6 +84,7 @@ impl IntoRawFd for SharedMemory {
 }
 
 impl FromRawFd for SharedMemory {
+    #[inline]
     unsafe fn from_raw_fd(fd: RawFd) -> SharedMemory {
         SharedMemory(fd)
     }
