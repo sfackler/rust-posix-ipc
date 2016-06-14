@@ -169,8 +169,8 @@ mod test {
         let name = "/posix-pic-shm-metadata";
         let shm = OpenOptions::new().create(true).write(true).open(name).unwrap();
         unlink(name).unwrap();
-        shm.set_len(123).unwrap();
-        assert_eq!(shm.metadata().unwrap().len(), 123);
+        shm.set_len(4096).unwrap();
+        assert_eq!(shm.metadata().unwrap().len(), 4096);
         shm.set_len(0).unwrap();
     }
 }
