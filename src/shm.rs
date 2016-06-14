@@ -4,7 +4,6 @@ use libc;
 
 use std::ffi::{OsStr, CString};
 use std::io;
-use std::mem;
 use std::fs::{File, Metadata};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
@@ -16,15 +15,7 @@ type ModeHack = libc::c_int;
 type ModeHack = libc::mode_t;
 
 /// A shared memory region.
-pub struct SharedMemory(libc::c_int);
-
-impl Drop for SharedMemory {
-    fn drop(&mut self) {
-        unsafe {
-            libc::close(self.0);
-        }
-    }
-}
+pub struct SharedMemory(File);
 
 impl SharedMemory {
     /// Sets the length of the shared memory region.
@@ -32,61 +23,39 @@ impl SharedMemory {
     /// If `size` is greater than the current size of the region, it will be
     /// extended with 0s.
     pub fn set_len(&self, size: u64) -> io::Result<()> {
-        unsafe {
-            if size > libc::off_t::max_value() as u64 {
-                return Err(io::Error::new(io::ErrorKind::InvalidInput, "size too large"));
-            }
-
-            if libc::ftruncate(self.0, size as libc::off_t) == 0 {
-                Ok(())
-            } else {
-                Err(io::Error::last_os_error())
-            }
-        }
+        self.0.set_len(size)
     }
 
     /// Returns metadata about the shared memory region, including its length.
     pub fn metadata(&self) -> io::Result<Metadata> {
-        // this is pretty sketch, but Metadata doesn't have any public
-        // constructors
-        let file = unsafe { File::from_raw_fd(self.0) };
-        let metadata = file.metadata();
-        mem::forget(file);
-        metadata
+        self.0.metadata()
     }
 
     /// Returns a new independently owned handle to the same shared memory
     /// region.
     pub fn try_clone(&self) -> io::Result<SharedMemory> {
-        let fd = unsafe { libc::dup(self.0) };
-        if fd < 0 {
-            Err(io::Error::last_os_error())
-        } else {
-            Ok(SharedMemory(fd))
-        }
+        self.0.try_clone().map(SharedMemory)
     }
 }
 
 impl AsRawFd for SharedMemory {
     #[inline]
     fn as_raw_fd(&self) -> RawFd {
-        self.0
+        self.0.as_raw_fd()
     }
 }
 
 impl IntoRawFd for SharedMemory {
     #[inline]
     fn into_raw_fd(self) -> RawFd {
-        let fd = self.0;
-        mem::forget(self);
-        fd
+        self.0.into_raw_fd()
     }
 }
 
 impl FromRawFd for SharedMemory {
     #[inline]
     unsafe fn from_raw_fd(fd: RawFd) -> SharedMemory {
-        SharedMemory(fd)
+        SharedMemory(File::from_raw_fd(fd))
     }
 }
 
@@ -171,7 +140,7 @@ impl OpenOptions {
         unsafe {
             let ret = libc::shm_open(name.as_ptr(), oflag, self.mode as ModeHack);
             if ret >= 0 {
-                Ok(SharedMemory(ret))
+                Ok(SharedMemory::from_raw_fd(ret))
             } else {
                 Err(io::Error::last_os_error())
             }
