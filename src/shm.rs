@@ -118,6 +118,8 @@ impl OpenOptions {
     }
 
     /// Opens a shared memory region.
+    ///
+    /// The name should begin with a `/` and contain no further `/`s.
     pub fn open<T: AsRef<OsStr>>(&self, name: T) -> io::Result<SharedMemory> {
         let name = try!(CString::new(name.as_ref().as_bytes()));
 

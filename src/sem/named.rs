@@ -97,6 +97,8 @@ impl OpenOptions {
     }
 
     /// Opens a named semaphore.
+    ///
+    /// The name must begin with a `/` and contain no further `/`s.
     pub fn open<T: AsRef<OsStr>>(&self, name: T) -> io::Result<Semaphore> {
         let name = try!(CString::new(name.as_ref().as_bytes()));
 
