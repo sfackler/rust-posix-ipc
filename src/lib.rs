@@ -1,3 +1,7 @@
+//! Interfaces to the POSIX IPC APIs.
+#![doc(html_root_url="https://sfackler.github.io/rust-posix-ipc/doc/v0.1.0")]
+#![warn(missing_docs)]
+
 extern crate libc;
 
 pub mod mmap;

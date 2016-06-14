@@ -2,6 +2,10 @@
 name = "posix-ipc"
 version = "0.1.0"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
+description = "Interfaces to POSIX IPC APIs"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/sfackler/rust-posix-ipc"
+documentation = "https://sfackler.github.io/rust-posix-ipc/doc/v0.1.0/posix_ipc"
 
 [dependencies]
 libc = "0.2.12"
