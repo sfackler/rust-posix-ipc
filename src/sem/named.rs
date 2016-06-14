@@ -20,11 +20,15 @@ impl Drop for Semaphore {
 
 impl Semaphore {
     /// Opens an existing IPC semaphore.
+    ///
+    /// The name must begin with a `/` and contain no further `/`s.
     pub fn open<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
         OpenOptions::new().open(name.as_ref())
     }
 
     /// Opens an IPC semaphore, creating it if it does not already exist.
+    ///
+    /// The name must begin with a `/` and contain no further `/`s.
     pub fn create<T: AsRef<OsStr>>(name: T) -> io::Result<Semaphore> {
         OpenOptions::new().create(true).open(name.as_ref())
     }
