@@ -26,14 +26,14 @@ mod test {
         shm::unlink(name).unwrap();
         shm.set_len(4096).unwrap();
 
-        unsafe {
-            let mut mmap = mmap::MapOptions::new()
-                .read(true)
-                .write(true)
-                .shared(true)
-                .map(4096, &shm, 0)
-                .unwrap();
+        let mut mmap = mmap::MapOptions::new()
+            .read(true)
+            .write(true)
+            .shared(true)
+            .map(4096, &shm, 0)
+            .unwrap();
 
+        unsafe {
             let sem_ptr = mmap.as_mut_ptr() as *mut _;
             let _sem = Semaphore::new(sem_ptr, 1).unwrap();
 
