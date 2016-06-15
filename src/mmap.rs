@@ -11,6 +11,9 @@ pub struct MemoryMap {
     len: usize,
 }
 
+unsafe impl Send for MemoryMap {}
+unsafe impl Sync for MemoryMap {}
+
 impl Drop for MemoryMap {
     fn drop(&mut self) {
         unsafe {
