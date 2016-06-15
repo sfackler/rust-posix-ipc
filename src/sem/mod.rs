@@ -10,6 +10,9 @@ pub mod unnamed;
 
 struct RawSemaphore(*mut libc::sem_t);
 
+unsafe impl Sync for RawSemaphore {}
+unsafe impl Send for RawSemaphore {}
+
 impl RawSemaphore {
     fn wait(&self) {
         let r = unsafe { libc::sem_wait(self.0) };
