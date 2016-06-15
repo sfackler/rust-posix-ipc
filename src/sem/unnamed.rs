@@ -3,7 +3,7 @@
 use libc;
 use std::io;
 
-use sem::RawSemaphore;
+use sem::{RawSemaphore, TryWaitError};
 
 /// An owned, unnamed, IPC semaphore.
 pub struct Semaphore(RawSemaphore);
@@ -39,6 +39,12 @@ impl Semaphore {
     /// Decrements the semaphore by 1, blocking if semaphore's value is 0.
     pub fn wait(&self) {
         self.0.wait()
+    }
+
+    /// Attempts to decrement the semaphore by 1, returning an error if the
+    /// semaphore's value is 0.
+    pub fn try_wait(&self) -> Result<(), TryWaitError> {
+        self.0.try_wait()
     }
 
     /// Increments the semaphore by 1.

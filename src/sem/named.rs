@@ -5,7 +5,7 @@ use std::io;
 use std::ffi::{OsStr, CString};
 use std::os::unix::ffi::OsStrExt;
 
-use sem::RawSemaphore;
+use sem::{RawSemaphore, TryWaitError};
 
 /// A POSIX named semaphore.
 pub struct Semaphore(RawSemaphore);
@@ -36,6 +36,12 @@ impl Semaphore {
     /// Decrements the semaphore by 1, blocking if semaphore's value is 0.
     pub fn wait(&self) {
         self.0.wait()
+    }
+
+    /// Attempts to decrement the semaphore by 1, returning an error if the
+    /// semaphore's value is 0.
+    pub fn try_wait(&self) -> Result<(), TryWaitError> {
+        self.0.try_wait()
     }
 
     /// Increments the semaphore by 1.
@@ -163,5 +169,15 @@ mod test {
         Semaphore::create(name).unwrap();
         Semaphore::open(name).unwrap();
         unlink(name).unwrap();
+    }
+
+    #[test]
+    fn try_wait() {
+        let name = "/posix-ipc-sem-try-wait";
+        let sem = OpenOptions::new().create_new(true).open(name).unwrap();
+        unlink(name).unwrap();
+        assert!(sem.try_wait().is_err());
+        sem.post();
+        assert!(sem.try_wait().is_ok());
     }
 }
